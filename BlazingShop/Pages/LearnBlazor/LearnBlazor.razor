@@ -1,0 +1,12 @@
+@inherits LearnBlazorBase
+@page "/learnblazor"
+<h3 class="text-info pb-3">@WelcomeText</h3>
+
+<p>On Change &nbsp; <input @bind="Name"/></p>
+<p>On Spontaneous &nbsp; <input @bind="Name" @bind:event="oninput"/></p>
+
+<p>I am @(Name != string.Empty ? Name : "_____") </p>
+
+<p>
+    <button @onclick="GetName">Suprise Me!</button>
+</p>
