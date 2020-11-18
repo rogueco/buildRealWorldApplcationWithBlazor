@@ -1,0 +1,144 @@
+@page "/category"
+@using BlazingShop.Data
+@using BlazingShop.Services
+@inherits OwningComponentBase<CategoryService>
+
+@if (_categories == null)
+{
+    <p>
+        <em>Loading or No categories exist</em>
+    </p>
+}
+else
+{
+    <div class="container border p-3">
+        <div class="row">
+            <div class="clo-5">
+                <h3 class="text-info">Category List</h3>
+            </div>
+            <div class="col-3">
+                <button class="btn btn-info form-control" @onclick="AddNewCategory">Add New Category</button>
+            </div>
+        </div>
+        <div class="row pt-4">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Category Name</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (Category category in _categories)
+                {
+                    <tr>
+                        <td>@category.Name</td>
+                        <td>
+                            <button class="btn btn-primary" style="width: 150px;" @onclick="() => EditCategory(category)">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (_showPopup)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <EditForm Model="@_category" OnValidSubmit="@ValidSubmit">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="text-info">@(_category.Id != 0 ? "Update" : "Create") Category</h3>
+                        <button type="button" class="close" @onclick="ClosePopup">
+                            <span aria-hidden="true">X</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <DataAnnotationsValidator/>
+                        <ValidationSummary/>
+                        <div class="row">
+                            <div class="col-9">
+                                <div class="row py-2">
+                                    <div class="col-4">
+                                        Category Name
+                                    </div>
+                                    <div class="col-8">
+                                        <input class="form-control" type="text" @bind="_category.Name"/>
+                                    </div>
+                                </div>
+                                <div class="row py-2">
+                                    <div class="col-4">
+
+                                    </div>
+                                    <div class="col-8">
+                                        <button class="btn btn-primary form-control" type="submit">Submit</button>
+                                    </div>
+                                    
+                                    <div class="col">
+                                        <button class="btn btn-danger form-control" @onclick="() => DeleteCategory(_category)">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+
+    </div>
+}
+
+
+@code {
+    List<Category> _categories;
+    Category _category = new Category();
+    bool _showPopup = false;
+
+    protected override void OnInitialized()
+    {
+        _categories = Service.GetCategories();
+    }
+
+    void AddNewCategory()
+    {
+        _category.Name = "";
+        _category.Id = 0;
+        _showPopup = true;
+    }
+    
+    void EditCategory(Category category)
+    {
+        _category = category;
+        _showPopup = true;
+    }
+    
+    void DeleteCategory(Category category)
+    {
+        _showPopup = false;
+        bool result = Service.DeleteCategory(category);
+        _categories.Clear();
+        _categories = Service.GetCategories();
+    }
+
+    void ClosePopup()
+    {
+        _showPopup = false;
+    }
+
+    void ValidSubmit()
+    {
+        bool result = false;
+        _showPopup = false;
+
+        result = _category.Id > 0 ? Service.UpdateCategory(_category) : Service.CreateCategory(_category);
+
+        _categories = Service.GetCategories();
+    }
+}
